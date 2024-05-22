@@ -18,133 +18,158 @@ class _HomePageState extends State<HomePage> {
   Future<bool> _onWillPop() async {
     return (await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Exit App'),
-        content: Text('Do you want to exit the app?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('No'),
+      builder: (context) =>
+          AlertDialog(
+            title: Text('Exit App'),
+            content: Text('Do you want to exit the app?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Yes'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Yes'),
-          ),
-        ],
-      ),
     )) ??
         false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("HomePage"),
-          centerTitle: true,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _popupMenuButton(),
-            ),
-          ],
-        ),
-        // drawer: _drawer(),
-        body: Consumer<HomePageProvider>(
-          builder: (BuildContext context, HomePageProvider value, Widget? child) {
-            return SafeArea(
-              child: Column(
-                children: [
-                  Consumer<HomePageProvider>(
-                    builder: (BuildContext context, value, Widget? child) {
-                      if (value.webProgress == 1) {
-                        return SizedBox();
-                      }
-                      return LinearProgressIndicator(
-                        value: value.webProgress,
-                      );
-                    },
-                  ),
-                  Consumer<HomePageProvider>(
-                    builder: (BuildContext context, value, Widget? child) {
-                      return Expanded(
-                        child: Container(
-                          child: InAppWebView(
-                            initialUrlRequest: URLRequest(
-                              url: WebUri("https://google.com/"),
-                            ),
-                            onWebViewCreated: (controller) {
-                              inAppWebViewController = controller;
-                            },
-                            onProgressChanged: (controller, progress) {
-                              Provider.of<HomePageProvider>(context,
-                                      listen: false)
-                                  .onWebProgress(progress / 100);
-                            },
-                            onLoadStart: (controller, url) {
-                              Provider.of<HomePageProvider>(context,
-                                      listen: false)
-                                  .onChangeLoad(true);
-                            },
-                            onLoadStop: (controller, url) {
-                              Provider.of<HomePageProvider>(context,
-                                      listen: false)
-                                  .onChangeLoad(false);
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  Container(
-                    color: Colors.grey.withOpacity(0.2),
-                    child: Consumer<HomePageProvider>(
-                      builder:
-                          (BuildContext context, searchValue, Widget? child) {
-                        return TextFormField(
-                          onFieldSubmitted: (value) {
-                            if (searchValue.engine == "https://duckduckgo.com/") {
-                              String search =
-                                  "${searchValue.engine}?va=c&t=hl&q=$value";
-                              inAppWebViewController?.loadUrl(
-                                  urlRequest: URLRequest(url: WebUri(search)));
-                            } else if (searchValue.engine ==
-                                "https://search.yahoo.com/") {
-                              String search =
-                                  "${searchValue.engine}search?p=$value";
-                              inAppWebViewController?.loadUrl(
-                                  urlRequest: URLRequest(url: WebUri(search)));
-                            } else if (searchValue.engine ==
-                                "https://www.google.com/") {
-                              String search =
-                                  "${searchValue.engine}search?q=$value";
-                              inAppWebViewController?.loadUrl(
-                                  urlRequest: URLRequest(url: WebUri(search)));
-                            } else if (searchValue.engine == "https://www.bing.com/"){
-                              String search =
-                                  "${searchValue.engine}search?q=$value";
-                              inAppWebViewController?.loadUrl(
-                                  urlRequest: URLRequest(url: WebUri(search)));
-                            }
-                          },
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(),
-                          ),
-                        );
-                      },
-                    ),
+    return Consumer<HomePageProvider>(
+      builder: (BuildContext context, value, Widget? child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: value.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+          home: WillPopScope(
+            onWillPop: _onWillPop,
+            child: Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: value.isDarkMode
+                      ? Icon(Icons.dark_mode_outlined)
+                      : Icon(Icons.light_mode_outlined), onPressed: () {
+                  value.toggleTheme();
+                },),
+                title: Text("HomePage"),
+                centerTitle: true,
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _popupMenuButton(),
                   ),
                 ],
               ),
-            );
-          },
-        ),
-        bottomNavigationBar: _bottomNavigationBar(),
-      ),
+              // drawer: _drawer(),
+              body: Consumer<HomePageProvider>(
+                builder: (BuildContext context, HomePageProvider value,
+                    Widget? child) {
+                  return SafeArea(
+                    child: Column(
+                      children: [
+                        Consumer<HomePageProvider>(
+                          builder:
+                              (BuildContext context, value, Widget? child) {
+                            if (value.webProgress == 1) {
+                              return SizedBox();
+                            }
+                            return LinearProgressIndicator(
+                              value: value.webProgress,
+                            );
+                          },
+                        ),
+                        Consumer<HomePageProvider>(
+                          builder:
+                              (BuildContext context, value, Widget? child) {
+                            return Expanded(
+                              child: Container(
+                                child: InAppWebView(
+                                  initialUrlRequest: URLRequest(
+                                    url: WebUri("https://google.com/"),
+                                  ),
+                                  onWebViewCreated: (controller) {
+                                    inAppWebViewController = controller;
+                                  },
+                                  onProgressChanged: (controller, progress) {
+                                    Provider.of<HomePageProvider>(context,
+                                        listen: false)
+                                        .onWebProgress(progress / 100);
+                                  },
+                                  onLoadStart: (controller, url) {
+                                    Provider.of<HomePageProvider>(context,
+                                        listen: false)
+                                        .onChangeLoad(true);
+                                  },
+                                  onLoadStop: (controller, url) {
+                                    Provider.of<HomePageProvider>(context,
+                                        listen: false)
+                                        .onChangeLoad(false);
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        Container(
+                          color: Colors.grey.withOpacity(0.2),
+                          child: Consumer<HomePageProvider>(
+                            builder: (BuildContext context, searchValue,
+                                Widget? child) {
+                              return TextFormField(
+                                onFieldSubmitted: (value) {
+                                  if (searchValue.engine ==
+                                      "https://duckduckgo.com/") {
+                                    String search =
+                                        "${searchValue
+                                        .engine}?va=c&t=hl&q=$value";
+                                    inAppWebViewController?.loadUrl(
+                                        urlRequest:
+                                        URLRequest(url: WebUri(search)));
+                                  } else if (searchValue.engine ==
+                                      "https://search.yahoo.com/") {
+                                    String search =
+                                        "${searchValue.engine}search?p=$value";
+                                    inAppWebViewController?.loadUrl(
+                                        urlRequest:
+                                        URLRequest(url: WebUri(search)));
+                                  } else if (searchValue.engine ==
+                                      "https://www.google.com/") {
+                                    String search =
+                                        "${searchValue.engine}search?q=$value";
+                                    inAppWebViewController?.loadUrl(
+                                        urlRequest:
+                                        URLRequest(url: WebUri(search)));
+                                  } else if (searchValue.engine ==
+                                      "https://www.bing.com/") {
+                                    String search =
+                                        "${searchValue.engine}search?q=$value";
+                                    inAppWebViewController?.loadUrl(
+                                        urlRequest:
+                                        URLRequest(url: WebUri(search)));
+                                  }
+                                },
+                                maxLines: 1,
+                                decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.search),
+                                  border: OutlineInputBorder(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              bottomNavigationBar: _bottomNavigationBar(),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -153,7 +178,9 @@ class _HomePageState extends State<HomePage> {
       inAppWebViewController?.loadUrl(
         urlRequest: URLRequest(
           url: WebUri(
-              Provider.of<HomePageProvider>(context, listen: false).engine ??
+              Provider
+                  .of<HomePageProvider>(context, listen: false)
+                  .engine ??
                   "google"),
         ),
       );
@@ -253,13 +280,14 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pop(context);
                 Future.delayed(
                   Duration.zero,
-                  () {
+                      () {
                     showModalBottomSheet(
                       backgroundColor: Color(0xfff4f4f4),
                       context: context,
                       builder: (context) {
-                        final bookmarks = Provider.of<HomePageProvider>(context,
-                                listen: false)
+                        final bookmarks = Provider
+                            .of<HomePageProvider>(context,
+                            listen: false)
                             .bookMarks;
                         return Consumer<HomePageProvider>(
                           builder: (BuildContext context,
@@ -278,7 +306,7 @@ class _HomePageState extends State<HomePage> {
                                   trailing: InkWell(
                                     onTap: () {
                                       Provider.of<HomePageProvider>(context,
-                                              listen: false)
+                                          listen: false)
                                           .deleteBookMark(index);
                                       print("Delete BookMarks!!!!");
                                       Navigator.pop(context);
@@ -292,8 +320,8 @@ class _HomePageState extends State<HomePage> {
                                     Navigator.pop(context);
                                     inAppWebViewController?.loadUrl(
                                         urlRequest: URLRequest(
-                                      url: WebUri(bookmarks[index]["url"]),
-                                    ));
+                                          url: WebUri(bookmarks[index]["url"]),
+                                        ));
                                   },
                                 );
                               },
@@ -343,7 +371,7 @@ class _HomePageState extends State<HomePage> {
 
                               //send data to provider
                               Provider.of<HomePageProvider>(context,
-                                      listen: false)
+                                  listen: false)
                                   .changeEngine("https://www.google.com/");
                               print("Google");
                               Navigator.pop(context);
@@ -359,9 +387,9 @@ class _HomePageState extends State<HomePage> {
                               inAppWebViewController?.loadUrl(
                                   urlRequest: URLRequest(
                                       url:
-                                          WebUri("https://search.yahoo.com/")));
+                                      WebUri("https://search.yahoo.com/")));
                               Provider.of<HomePageProvider>(context,
-                                      listen: false)
+                                  listen: false)
                                   .changeEngine("https://search.yahoo.com/");
                               print("Yahoo");
                               Navigator.pop(context);
@@ -378,7 +406,7 @@ class _HomePageState extends State<HomePage> {
                                   urlRequest: URLRequest(
                                       url: WebUri("https://www.bing.com/")));
                               Provider.of<HomePageProvider>(context,
-                                      listen: false)
+                                  listen: false)
                                   .changeEngine("https://www.bing.com/");
                               print("Bing");
                               Navigator.pop(context);
@@ -388,7 +416,7 @@ class _HomePageState extends State<HomePage> {
                             leading: SizedBox(
                               height: 25,
                               child:
-                                  Image.asset("assets/images/duckduckgo.png"),
+                              Image.asset("assets/images/duckduckgo.png"),
                             ),
                             title: Text("Duck Duck Go"),
                             onTap: () {
@@ -396,7 +424,7 @@ class _HomePageState extends State<HomePage> {
                                   urlRequest: URLRequest(
                                       url: WebUri("https://duckduckgo.com/")));
                               Provider.of<HomePageProvider>(context,
-                                      listen: false)
+                                  listen: false)
                                   .changeEngine("https://duckduckgo.com/");
                               print("Duck Duck Go");
                               Navigator.pop(context);

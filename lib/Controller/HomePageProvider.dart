@@ -16,22 +16,33 @@ class HomePageProvider extends ChangeNotifier {
   }
 
   List<Map> bookMarks = [];
-  void addBookMark (Map bookMark){
-    if(bookMarks == bookMark){
 
-    }else{
+  void addBookMark(Map bookMark) {
+    if (bookMarks == bookMark) {
+    } else {
       bookMarks.add(bookMark);
     }
     notifyListeners();
   }
-  void deleteBookMark (index){
+
+  void deleteBookMark(index) {
     bookMarks.removeAt(index);
     notifyListeners();
   }
 
   String? engine;
-  void changeEngine (String value){
+
+  void changeEngine(String value) {
     engine = value;
+    notifyListeners();
+  }
+
+  bool _isDarkMode = false;
+
+  bool get isDarkMode => _isDarkMode;
+
+  void toggleTheme() {
+    _isDarkMode = !_isDarkMode;
     notifyListeners();
   }
 }
