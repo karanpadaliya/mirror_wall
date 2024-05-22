@@ -1,4 +1,4 @@
-# Project Name: My Browser App (Mirror Wall)
+# My Browser App (Mirror Wall)
 
 ## Project Technologies:
 - **Dart Language:** The primary programming language used for the application.
