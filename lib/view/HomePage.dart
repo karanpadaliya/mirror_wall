@@ -15,106 +15,136 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool isVisible = false;
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("HomePage"),
-        centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _popupMenuButton(),
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Exit App'),
+        content: Text('Do you want to exit the app?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Yes'),
           ),
         ],
       ),
-      // drawer: _drawer(),
-      body: Consumer<HomePageProvider>(
-        builder: (BuildContext context, HomePageProvider value, Widget? child) {
-          return SafeArea(
-            child: Column(
-              children: [
-                Consumer<HomePageProvider>(
-                  builder: (BuildContext context, value, Widget? child) {
-                    if (value.webProgress == 1) {
-                      return SizedBox();
-                    }
-                    return LinearProgressIndicator(
-                      value: value.webProgress,
-                    );
-                  },
-                ),
-                Consumer<HomePageProvider>(
-                  builder: (BuildContext context, value, Widget? child) {
-                    return Expanded(
-                      child: Container(
-                        child: InAppWebView(
-                          initialUrlRequest: URLRequest(
-                            url: WebUri("https://google.com/"),
+    )) ??
+        false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("HomePage"),
+          centerTitle: true,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _popupMenuButton(),
+            ),
+          ],
+        ),
+        // drawer: _drawer(),
+        body: Consumer<HomePageProvider>(
+          builder: (BuildContext context, HomePageProvider value, Widget? child) {
+            return SafeArea(
+              child: Column(
+                children: [
+                  Consumer<HomePageProvider>(
+                    builder: (BuildContext context, value, Widget? child) {
+                      if (value.webProgress == 1) {
+                        return SizedBox();
+                      }
+                      return LinearProgressIndicator(
+                        value: value.webProgress,
+                      );
+                    },
+                  ),
+                  Consumer<HomePageProvider>(
+                    builder: (BuildContext context, value, Widget? child) {
+                      return Expanded(
+                        child: Container(
+                          child: InAppWebView(
+                            initialUrlRequest: URLRequest(
+                              url: WebUri("https://google.com/"),
+                            ),
+                            onWebViewCreated: (controller) {
+                              inAppWebViewController = controller;
+                            },
+                            onProgressChanged: (controller, progress) {
+                              Provider.of<HomePageProvider>(context,
+                                      listen: false)
+                                  .onWebProgress(progress / 100);
+                            },
+                            onLoadStart: (controller, url) {
+                              Provider.of<HomePageProvider>(context,
+                                      listen: false)
+                                  .onChangeLoad(true);
+                            },
+                            onLoadStop: (controller, url) {
+                              Provider.of<HomePageProvider>(context,
+                                      listen: false)
+                                  .onChangeLoad(false);
+                            },
                           ),
-                          onWebViewCreated: (controller) {
-                            inAppWebViewController = controller;
-                          },
-                          onProgressChanged: (controller, progress) {
-                            Provider.of<HomePageProvider>(context,
-                                    listen: false)
-                                .onWebProgress(progress / 100);
-                          },
-                          onLoadStart: (controller, url) {
-                            Provider.of<HomePageProvider>(context,
-                                    listen: false)
-                                .onChangeLoad(true);
-                          },
-                          onLoadStop: (controller, url) {
-                            Provider.of<HomePageProvider>(context,
-                                    listen: false)
-                                .onChangeLoad(false);
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                Container(
-                  color: Colors.grey.withOpacity(0.2),
-                  child: Consumer<HomePageProvider>(
-                    builder:
-                        (BuildContext context, searchValue, Widget? child) {
-                      return TextFormField(
-                        onFieldSubmitted: (value) {
-                          if (searchValue.engine == "https://duckduckgo.com/") {
-                            String search =
-                                "${searchValue.engine}?va=c&t=hl&q=$value";
-                            inAppWebViewController?.loadUrl(
-                                urlRequest: URLRequest(url: WebUri(search)));
-                          } else if (searchValue.engine ==
-                              "https://search.yahoo.com/") {
-                            String search =
-                                "${searchValue.engine}search?p=$value";
-                            inAppWebViewController?.loadUrl(
-                                urlRequest: URLRequest(url: WebUri(search)));
-                          } else {
-                            String search =
-                                "${searchValue.engine}search?q=$value";
-                            inAppWebViewController?.loadUrl(
-                                urlRequest: URLRequest(url: WebUri(search)));
-                          }
-                        },
-                        maxLines: 1,
-                        decoration: InputDecoration(
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
                         ),
                       );
                     },
                   ),
-                ),
-              ],
-            ),
-          );
-        },
+                  Container(
+                    color: Colors.grey.withOpacity(0.2),
+                    child: Consumer<HomePageProvider>(
+                      builder:
+                          (BuildContext context, searchValue, Widget? child) {
+                        return TextFormField(
+                          onFieldSubmitted: (value) {
+                            if (searchValue.engine == "https://duckduckgo.com/") {
+                              String search =
+                                  "${searchValue.engine}?va=c&t=hl&q=$value";
+                              inAppWebViewController?.loadUrl(
+                                  urlRequest: URLRequest(url: WebUri(search)));
+                            } else if (searchValue.engine ==
+                                "https://search.yahoo.com/") {
+                              String search =
+                                  "${searchValue.engine}search?p=$value";
+                              inAppWebViewController?.loadUrl(
+                                  urlRequest: URLRequest(url: WebUri(search)));
+                            } else if (searchValue.engine ==
+                                "https://www.google.com/") {
+                              String search =
+                                  "${searchValue.engine}search?q=$value";
+                              inAppWebViewController?.loadUrl(
+                                  urlRequest: URLRequest(url: WebUri(search)));
+                            } else if (searchValue.engine == "https://www.bing.com/"){
+                              String search =
+                                  "${searchValue.engine}search?q=$value";
+                              inAppWebViewController?.loadUrl(
+                                  urlRequest: URLRequest(url: WebUri(search)));
+                            }
+                          },
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        bottomNavigationBar: _bottomNavigationBar(),
       ),
-      bottomNavigationBar: _bottomNavigationBar(),
     );
   }
 
@@ -142,6 +172,25 @@ class _HomePageState extends State<HomePage> {
             .addBookMark(bookmark);
       }
       // Add BookMark Details
+      // Show dialog to confirm bookmark is added
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Bookmark Added"),
+            content: Text("The page '${urlTitle}' has been bookmarked."),
+            actions: <Widget>[
+              TextButton(
+                child: Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+
       print("Add BookMark ${url.toString()}");
     } else if (index == 2) {
       inAppWebViewController?.goBack();
@@ -282,7 +331,10 @@ class _HomePageState extends State<HomePage> {
                       child: Column(
                         children: [
                           ListTile(
-                            leading: Icon(Icons.add),
+                            leading: SizedBox(
+                              height: 25,
+                              child: Image.asset("assets/images/google.png"),
+                            ),
                             title: Text("Google"),
                             onTap: () {
                               inAppWebViewController?.loadUrl(
@@ -298,13 +350,16 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                           ListTile(
-                            leading: Icon(Icons.add),
+                            leading: SizedBox(
+                              height: 25,
+                              child: Image.asset("assets/images/yahoo.png"),
+                            ),
                             title: Text("Yahoo"),
                             onTap: () {
                               inAppWebViewController?.loadUrl(
                                   urlRequest: URLRequest(
-                                      url: WebUri(
-                                          "https://search.yahoo.com/")));
+                                      url:
+                                          WebUri("https://search.yahoo.com/")));
                               Provider.of<HomePageProvider>(context,
                                       listen: false)
                                   .changeEngine("https://search.yahoo.com/");
@@ -313,7 +368,10 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                           ListTile(
-                            leading: Icon(Icons.add),
+                            leading: SizedBox(
+                              height: 25,
+                              child: Image.asset("assets/images/bing.png"),
+                            ),
                             title: Text("Bing"),
                             onTap: () {
                               inAppWebViewController?.loadUrl(
@@ -327,7 +385,11 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                           ListTile(
-                            leading: Icon(Icons.add),
+                            leading: SizedBox(
+                              height: 25,
+                              child:
+                                  Image.asset("assets/images/duckduckgo.png"),
+                            ),
                             title: Text("Duck Duck Go"),
                             onTap: () {
                               inAppWebViewController?.loadUrl(
