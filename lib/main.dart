@@ -9,7 +9,7 @@ import 'view/loginPage/loginPage.dart';
 import 'view/loginPage/signUpPage.dart';
 
 void main() {
-  runApp(MainPage());
+  runApp(const MainPage());
 }
 
 class MainPage extends StatefulWidget {
@@ -31,14 +31,14 @@ class _MainPageState extends State<MainPage> {
         debugShowCheckedModeBanner: false,
         initialRoute: "/",
         routes: {
-          "/": (context) => SplashScreen(),
-          "HomePage": (context) => HomePage(),
-          "LoginPage": (context) => LoginPage(),
-          "SignUpPage": (context) => SignUpPage(),
+          "/": (context) => const SplashScreen(),
+          "HomePage": (context) => const HomePage(),
+          "LoginPage": (context) => const LoginPage(),
+          "SignUpPage": (context) => const SignUpPage(),
         },
         onUnknownRoute: (settings) {
           return MaterialPageRoute(
-            builder: (context) => Scaffold(
+            builder: (context) => const Scaffold(
               body: Center(
                 child: Text(
                   "onUnknownRoute",
