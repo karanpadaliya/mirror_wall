@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mirror_wall/Controller/HomePageProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,10 +12,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    getValue();
+  }
   InAppWebViewController? inAppWebViewController;
   int _selectedIndex = 0;
   bool isVisible = false;
-
   Future<bool> _onWillPop() async {
     return (await showDialog(
       context: context,
@@ -181,7 +186,7 @@ class _HomePageState extends State<HomePage> {
               Provider
                   .of<HomePageProvider>(context, listen: false)
                   .engine ??
-                  "google"),
+                  "https://www.google.com/"),
         ),
       );
       print("Home");
@@ -193,6 +198,9 @@ class _HomePageState extends State<HomePage> {
         "url": url.toString(),
         "urlTitle": urlTitle,
       };
+
+      var prefs = await SharedPreferences.getInstance();
+      prefs.setString("saveBookMark", inAppWebViewController.toString());
 
       if (url != null) {
         Provider.of<HomePageProvider>(context, listen: false)
@@ -441,6 +449,14 @@ class _HomePageState extends State<HomePage> {
         ];
       },
     );
+  }
+
+  void getValue() async{
+
+    var prefs = await SharedPreferences.getInstance();
+    var getBookmarks = prefs.getString("saveBookMark");
+    
+  //   Start Here
   }
 }
 
